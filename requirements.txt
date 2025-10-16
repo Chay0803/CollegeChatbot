@@ -1,0 +1,13 @@
+streamlit
+requests
+pydantic
+langchain
+langchain-community
+langchain-huggingface
+sentence-transformers
+chromadb
+pypdf
+torch
+transformers
+ollama
+openai
