@@ -38,7 +38,7 @@ client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY", "<OPENROUTER_API_KEY>"),  # Replace if not using env vars
 )
 
-def ask_ollama(prompt: str, model_name: str = "openai/gpt-oss-20b:free"):
+def ask_ollama(prompt: str, model_name: str = "meta-llama/llama-3.3-8b-instruct:free"):
     """
     Sends a prompt to the OpenRouter API and returns the generated text response.
     (Maintains backward compatibility with previous function name.)
