@@ -323,3 +323,7 @@ with tab3:
         st.error(f"Error reading employee data: {e}")
 
 st.markdown('</div>', unsafe_allow_html=True)
+import os
+import streamlit as st
+
+st.write("🔑 API key exists:", bool(os.getenv("OPENROUTER_API_KEY")))
