@@ -35,7 +35,7 @@ import os
 # Load OpenRouter API client
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY", "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"),  # Replace if not using env vars
+    api_key=os.getenv("OPENROUTER_API_KEY", "<OPENROUTER_API_KEY>"),  # Replace if not using env vars
 )
 
 def ask_ollama(prompt: str, model_name: str = "openai/gpt-oss-20b:free"):
