@@ -329,7 +329,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import uuid
-
+import pandas as pd
 from llama_api import ask_ollama
 from load_docs import get_vectorstore
 
@@ -417,46 +417,45 @@ async def serve_home(request: Request, session_id: str | None = Cookie(default=N
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.post("/chat", response_class=JSONResponse)
-async def chat_endpoint(
-    request: Request,
-    user_message: str = Form(...),
-    session_id: str | None = Cookie(default=None)
-):
-    """
-    Main chat endpoint — remembers past messages and retrieves context for each turn.
-    """
+@app.post("/chat")
+async def chat(request: Request, user_message: str = Form(...)):
     try:
-        # Assign session if missing
-        if not session_id:
-            session_id = str(uuid.uuid4())
-            conversation_memory[session_id] = []
+        # The detailed context prompt from your Streamlit app
+        prompt = f"""
+        You are an academic assistant for IFHE University. Use the context below to answer the question clearly and helpfully.
 
-        # Initialize memory if not present
-        if session_id not in conversation_memory:
-            conversation_memory[session_id] = []
+        The context includes various documents and FAQs related to IFHE University’s programs, admissions, and academic details.
 
-        # Normalize user question and get context
-        query = normalize_query(user_message)
-        docs = retriever.get_relevant_documents(query)
-        context = "\n\n".join([d.page_content for d in docs[:6]])
+        Instructions:
+        - If the question is about **courses**, list all courses offered by IFHE University (B.Tech, BBA, B.Sc, M.Tech, M.Sc, etc.) with their **specializations**.
+        - If the question is about **admissions** (including Postgraduate), provide details about:
+          * Admission process
+          * Important dates
+          * Eligibility criteria
+          * Required documents
+          * URLs for more information: 
+            - https://ifheindia.org/
+            - https://ifheindia.org/online-registration/
+        - If the question is about **fees, scholarships, placements, campus facilities, faculty, or programs**, provide accurate and concise details.
+        - If faculty details are asked, include:
+          * URL: https://ifheindia.org/faculty/
+          * Mention that faculty details are available on the official website.
+        - Format the answer in **structured sections** (like headings and bullet points).
+        - Avoid emojis.
+        - Respond in a formal, academic tone.
 
-        # Add user message to memory
-        conversation_memory[session_id].append({"role": "user", "content": user_message})
+        Now, here is the user question:
+        {user_message}
+        """
 
-        # Build contextual + history-aware prompt
-        prompt = build_prompt(conversation_memory[session_id], user_message, context)
+        response = ask_ollama(prompt)
 
-        # Generate model answer
-        answer = ask_ollama(prompt)
-
-        # Save bot reply to memory
-        conversation_memory[session_id].append({"role": "bot", "content": answer})
-
-        return JSONResponse({"answer": answer, "session_id": session_id})
+        return {"answer": response}
 
     except Exception as e:
-        return JSONResponse({"answer": f"⚠️ Error: {str(e)}"})
+        print("⚠️ Chat Error:", e)
+        return {"answer": f"⚠️ Error: {str(e)}"}
+
 
 
 @app.post("/reset", response_class=JSONResponse)
@@ -468,6 +467,46 @@ async def reset_conversation(session_id: str = Form(...)):
         conversation_memory[session_id] = []
     return JSONResponse({"status": "cleared"})
 
+EMPLOYEE_CSV_PATH = "employee_data.csv"
+
+try:
+    employees_df = pd.read_csv(EMPLOYEE_CSV_PATH)
+    print(f"✅ Loaded {len(employees_df)} employee records from {EMPLOYEE_CSV_PATH}")
+except Exception as e:
+    print("⚠️ Error loading employee CSV:", e)
+    employees_df = pd.DataFrame(columns=["id", "name", "role", "salary", "experience", "department"])
+
+
+@app.post("/employees/search")
+async def search_employees(
+    request: Request,
+    search_type: str = Form(...),
+    value: str = Form(...)
+):
+    try:
+        df = employees_df.copy()
+
+        if search_type == "id":
+            result = df[df["id"].astype(str).str.lower() == value.lower()]
+
+        elif search_type == "salary":
+            result = df[pd.to_numeric(df["salary"], errors="coerce") >= float(value)]
+
+        elif search_type == "experience":
+            result = df[pd.to_numeric(df["experience"], errors="coerce") >= float(value)]
+
+        else:
+            result = pd.DataFrame()
+
+        if result.empty:
+            return {"results": []}
+        else:
+            return {"results": result.to_dict(orient="records")}
+
+    except Exception as e:
+        print("⚠️ Employee search error:", e)
+        return {"results": [], "error": str(e)}
+
 # ------------------- PAGE ROUTES -------------------
 
 @app.get("/", response_class=HTMLResponse)
@@ -477,6 +516,7 @@ async def home(request: Request):
 @app.get("/chat", response_class=HTMLResponse)
 async def chat_page(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
+
 
 @app.get("/courses", response_class=HTMLResponse)
 async def courses_page(request: Request):
