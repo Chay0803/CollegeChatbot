@@ -324,28 +324,148 @@
 
 # st.markdown('</div>', unsafe_allow_html=True)
 
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, Cookie
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import uuid
 
-# from llama_api import ask_ollama  # ← Replace with your model API call
+from llama_api import ask_ollama
+from load_docs import get_vectorstore
 
-app = FastAPI()
+# -------------------------------------------------
+# INIT
+# -------------------------------------------------
+app = FastAPI(
+    title="IFHE Conversational Chatbot",
+    description="Context-aware chatbot with conversation memory",
+    version="3.0"
+)
 
-# Mount static files (CSS, JS)
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Jinja2 for rendering HTML
 templates = Jinja2Templates(directory="templates")
 
+# Retriever (for contextual search)
+retriever = get_vectorstore().as_retriever()
+
+# Global memory dictionary {session_id: [{"role": "user"/"bot", "content": "..."}]}
+conversation_memory = {}
+
+# -------------------------------------------------
+# HELPERS
+# -------------------------------------------------
+def normalize_query(query: str) -> str:
+    q = query.strip().lower()
+    if "admission" in q:
+        return "What is the admission process and important deadlines?"
+    elif "fee" in q or "fees" in q:
+        return "What is the fee structure?"
+    elif "calendar" in q or "schedule" in q:
+        return "Show the academic calendar and schedule"
+    elif "hostel" in q or "transport" in q:
+        return "What are the hostel and transport facilities?"
+    elif "faculty" in q or "teacher" in q:
+        return "Who are the faculty members at IFHE?"
+    elif "placement" in q or "recruiters" in q:
+        return "Tell me about placements and top recruiters at IFHE."
+    elif "scholarship" in q:
+        return "What scholarships are available at IFHE?"
+    return q
+
+
+def build_prompt(history, user_message, context):
+    """
+    Build a conversation-aware prompt for LLM.
+    Includes past turns and relevant retrieved documents.
+    """
+    history_text = ""
+    for turn in history[-5:]:  # last 5 turns
+        role = "User" if turn["role"] == "user" else "Assistant"
+        history_text += f"{role}: {turn['content']}\n"
+
+    return f"""
+You are an academic assistant for IFHE University.
+Answer clearly, professionally, and concisely.
+
+Context from documents:
+{context}
+
+Conversation so far:
+{history_text}
+
+Current user question:
+User: {user_message}
+
+Answer:
+"""
+
+
+# -------------------------------------------------
+# ROUTES
+# -------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
-async def get_chat_page(request: Request):
+async def serve_home(request: Request, session_id: str | None = Cookie(default=None)):
+    """
+    Serve the chatbot UI and assign a unique session ID if missing.
+    """
+    if not session_id:
+        session_id = str(uuid.uuid4())
+        response = templates.TemplateResponse("index.html", {"request": request})
+        response.set_cookie(key="session_id", value=session_id, httponly=True)
+        return response
+
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/chat")
-async def chat_api(user_message: str = Form(...)):
-    # Dummy logic for now (replace with ask_ollama)
-    # answer = ask_ollama(user_message)
-    answer = f"AI Response: {user_message[::-1]}"  # Reverses text for demo
-    return JSONResponse({"answer": answer})
+
+@app.post("/chat", response_class=JSONResponse)
+async def chat_endpoint(
+    request: Request,
+    user_message: str = Form(...),
+    session_id: str | None = Cookie(default=None)
+):
+    """
+    Main chat endpoint — remembers past messages and retrieves context for each turn.
+    """
+    try:
+        # Assign session if missing
+        if not session_id:
+            session_id = str(uuid.uuid4())
+            conversation_memory[session_id] = []
+
+        # Initialize memory if not present
+        if session_id not in conversation_memory:
+            conversation_memory[session_id] = []
+
+        # Normalize user question and get context
+        query = normalize_query(user_message)
+        docs = retriever.get_relevant_documents(query)
+        context = "\n\n".join([d.page_content for d in docs[:6]])
+
+        # Add user message to memory
+        conversation_memory[session_id].append({"role": "user", "content": user_message})
+
+        # Build contextual + history-aware prompt
+        prompt = build_prompt(conversation_memory[session_id], user_message, context)
+
+        # Generate model answer
+        answer = ask_ollama(prompt)
+
+        # Save bot reply to memory
+        conversation_memory[session_id].append({"role": "bot", "content": answer})
+
+        return JSONResponse({"answer": answer, "session_id": session_id})
+
+    except Exception as e:
+        return JSONResponse({"answer": f"⚠️ Error: {str(e)}"})
+
+
+@app.post("/reset", response_class=JSONResponse)
+async def reset_conversation(session_id: str = Form(...)):
+    """
+    Clears conversation history for a session.
+    """
+    if session_id in conversation_memory:
+        conversation_memory[session_id] = []
+    return JSONResponse({"status": "cleared"})
+
+

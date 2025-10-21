@@ -1,62 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IFHE Chatbot</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IFHE College Assistant</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <div class="chat-container">
-    <div class="chat-header">
-      <h2>🎓 IFHE College Chatbot</h2>
-    </div>
+  <header class="topbar">
+    <h1>🎓 IFHE College Assistant</h1>
+    <nav class="tabs">
+      <button class="tab active" data-tab="chat">Chatbot</button>
+      <button class="tab" data-tab="recommender">Course Recommender</button>
+      <button class="tab" data-tab="employees">Employee Lookup</button>
+    </nav>
+  </header>
 
-    <div id="chat-box" class="chat-box"></div>
+  <main>
+    <!-- CHAT TAB -->
+    <section id="chat" class="tab-content active">
+      <div class="chat-container">
+        <div id="chat-box" class="chat-box"></div>
+        <form id="chat-form" class="chat-form">
+          <textarea id="chat-input" placeholder="Type your question..." rows="1"></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </div>
+    </section>
 
-    <form id="chat-form" class="chat-form">
-      <input type="text" id="user-input" name="user_message" placeholder="Type your message..." required>
-      <button type="submit">Send</button>
-    </form>
-  </div>
+    <!-- COURSE RECOMMENDER TAB -->
+    <section id="recommender" class="tab-content">
+      <div class="form-container">
+        <h2>Course Recommender</h2>
+        <form id="course-form">
+          <label>Stream:</label>
+          <select name="stream" required>
+            <option value="">Select</option>
+            <option>Science</option>
+            <option>Commerce</option>
+            <option>Arts</option>
+          </select>
 
-  <script>
-    const form = document.getElementById("chat-form");
-    const chatBox = document.getElementById("chat-box");
+          <label>Area of Interest:</label>
+          <select name="interest" required>
+            <option value="">Select</option>
+            <option>Tech</option>
+            <option>Law</option>
+            <option>Management</option>
+          </select>
 
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
+          <label>Comfortable in English?</label>
+          <select name="english" required>
+            <option value="">Select</option>
+            <option>Yes</option>
+            <option>No</option>
+          </select>
 
-      const userInput = document.getElementById("user-input");
-      const message = userInput.value.trim();
-      if (!message) return;
+          <label>10th Percentage:</label>
+          <input type="number" name="tenth" step="0.1" min="0" max="100" required>
 
-      // Add user message to chat
-      chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
-      userInput.value = "";
+          <label>12th Percentage:</label>
+          <input type="number" name="twelfth" step="0.1" min="0" max="100" required>
 
-      // Scroll down
-      chatBox.scrollTop = chatBox.scrollHeight;
+          <button type="submit">Recommend Courses</button>
+        </form>
 
-      // Show typing indicator
-      const loader = document.createElement("div");
-      loader.className = "message bot-message loading";
-      loader.innerHTML = "Typing...";
-      chatBox.appendChild(loader);
+        <div id="course-results" class="results-box"></div>
+      </div>
+    </section>
 
-      // Fetch AI response
-      const response = await fetch("/chat", {
-        method: "POST",
-        body: new URLSearchParams({ user_message: message }),
-        headers: { "Content-Type": "application/x-www-form-urlencoded" }
-      });
-      const data = await response.json();
+    <!-- EMPLOYEE DETAILS TAB -->
+    <section id="employees" class="tab-content">
+      <div class="form-container">
+        <h2>Employee Details Lookup</h2>
+        <form id="employee-form">
+          <label>Search by:</label>
+          <select name="search_type" required>
+            <option value="id">Employee ID</option>
+            <option value="salary">Salary ≥</option>
+            <option value="experience">Experience ≥</option>
+          </select>
 
-      // Remove loader and show answer
-      loader.remove();
-      chatBox.innerHTML += `<div class="message bot-message">${data.answer}</div>`;
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-  </script>
+          <label>Enter Value:</label>
+          <input type="text" name="value" required>
+
+          <button type="submit">Search</button>
+        </form>
+
+        <div id="employee-results" class="results-box"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>
