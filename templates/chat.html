@@ -4,11 +4,17 @@
   <h2>💬 IFHE Chatbot</h2>
   <div class="chat-container">
     <div id="chat-box" class="chat-box"></div>
+
     <form id="chat-form" class="chat-form">
       <textarea id="chat-input" placeholder="Ask your question..." rows="1"></textarea>
       <button type="submit">Send</button>
     </form>
   </div>
 </section>
+
+<!-- ✅ Markdown Parser (for rendering ##, **, lists, and links properly) -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<!-- ✅ Your custom chat logic -->
 <script src="/static/chat.js"></script>
 {% endblock %}

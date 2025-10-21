@@ -467,7 +467,7 @@ async def reset_conversation(session_id: str = Form(...)):
         conversation_memory[session_id] = []
     return JSONResponse({"status": "cleared"})
 
-EMPLOYEE_CSV_PATH = "employee_data.csv"
+EMPLOYEE_CSV_PATH = "employees1.csv"
 
 try:
     employees_df = pd.read_csv(EMPLOYEE_CSV_PATH)

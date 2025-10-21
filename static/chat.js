@@ -6,7 +6,15 @@ const chatInput = document.getElementById("chat-input");
 function addMessage(role, text) {
   const msg = document.createElement("div");
   msg.className = `chat-message ${role}-message`;
-  msg.textContent = text;
+
+  // Convert Markdown to HTML using marked.js
+  try {
+    msg.innerHTML = marked.parse(text);
+  } catch (err) {
+    console.error("Markdown parse error:", err);
+    msg.textContent = text; // fallback
+  }
+
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
