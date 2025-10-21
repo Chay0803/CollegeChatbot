@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-section">
+  <h2>🎓 Course Recommender</h2>
+  <form id="course-form">
+    <label>Stream</label>
+    <select name="stream" required>
+      <option value="">Select</option>
+      <option>Science</option>
+      <option>Commerce</option>
+      <option>Arts</option>
+    </select>
+
+    <label>Interest</label>
+    <select name="interest" required>
+      <option value="">Select</option>
+      <option>Tech</option>
+      <option>Law</option>
+      <option>Management</option>
+    </select>
+
+    <label>English Proficiency</label>
+    <select name="english" required>
+      <option value="">Select</option>
+      <option>Yes</option>
+      <option>No</option>
+    </select>
+
+    <label>10th %</label>
+    <input type="number" name="tenth" step="0.1" required>
+
+    <label>12th %</label>
+    <input type="number" name="twelfth" step="0.1" required>
+
+    <button type="submit">Recommend</button>
+  </form>
+  <div id="course-results" class="results"></div>
+</section>
+<script src="/static/courses.js"></script>
+{% endblock %}

@@ -468,4 +468,21 @@ async def reset_conversation(session_id: str = Form(...)):
         conversation_memory[session_id] = []
     return JSONResponse({"status": "cleared"})
 
+# ------------------- PAGE ROUTES -------------------
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request})
+
+@app.get("/chat", response_class=HTMLResponse)
+async def chat_page(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request})
+
+@app.get("/courses", response_class=HTMLResponse)
+async def courses_page(request: Request):
+    return templates.TemplateResponse("courses.html", {"request": request})
+
+@app.get("/employees", response_class=HTMLResponse)
+async def employees_page(request: Request):
+    return templates.TemplateResponse("employees.html", {"request": request})
 

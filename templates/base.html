@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>IFHE Assistant</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <div class="logo">🎓 IFHE Assistant</div>
+    <nav class="nav-links">
+      <a href="/chat">Chatbot</a>
+      <a href="/courses">Course Recommender</a>
+      <a href="/employees">Employee Lookup</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>© 2025 IFHE University | Powered by FastAPI + OpenRouter</p>
+  </footer>
+</body>
+</html>

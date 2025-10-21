@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="form-section">
+  <h2>👨‍💼 Employee Lookup</h2>
+  <form id="employee-form">
+    <label>Search by:</label>
+    <select name="search_type" required>
+      <option value="id">Employee ID</option>
+      <option value="salary">Salary ≥</option>
+      <option value="experience">Experience ≥</option>
+    </select>
+
+    <label>Value:</label>
+    <input type="text" name="value" required>
+    <button type="submit">Search</button>
+  </form>
+
+  <div id="employee-results" class="results"></div>
+</section>
+<script src="/static/employees.js"></script>
+{% endblock %}
