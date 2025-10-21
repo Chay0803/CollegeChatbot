@@ -29,8 +29,12 @@
 #             # yield incremental text (could be full or partial)
 #             yield text
 
-from openai import OpenAI
+from dotenv import load_dotenv
 import os
+from openai import OpenAI
+
+# Load .env
+load_dotenv()
 
 # Load OpenRouter API client
 client = OpenAI(
