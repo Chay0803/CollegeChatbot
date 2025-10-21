@@ -35,7 +35,7 @@ from openai import OpenAI
 
 # Load .env
 load_dotenv()
-
+print("🔑 Loaded key prefix:", os.getenv("OPENROUTER_API_KEY")[:15])
 # Load OpenRouter API client
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
