@@ -59,7 +59,7 @@ def ask_ollama(prompt: str, model_name: str = "meta-llama/llama-4-scout:free"):
 
 
 # Optional: Streaming support (if you want real-time typing effect later)
-def ask_ollama_stream(prompt: str, model_name: str = "openai/gpt-oss-20b:free"):
+def ask_ollama_stream(prompt: str, model_name: str = "meta-llama/llama-3.3-8b-instruct:free"):
     """
     Streams response from OpenRouter model.
     """

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IFHE Chatbot</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      <h2>🎓 IFHE College Chatbot</h2>
+    </div>
+
+    <div id="chat-box" class="chat-box"></div>
+
+    <form id="chat-form" class="chat-form">
+      <input type="text" id="user-input" name="user_message" placeholder="Type your message..." required>
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("chat-form");
+    const chatBox = document.getElementById("chat-box");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const userInput = document.getElementById("user-input");
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      // Add user message to chat
+      chatBox.innerHTML += `<div class="message user-message">${message}</div>`;
+      userInput.value = "";
+
+      // Scroll down
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Show typing indicator
+      const loader = document.createElement("div");
+      loader.className = "message bot-message loading";
+      loader.innerHTML = "Typing...";
+      chatBox.appendChild(loader);
+
+      // Fetch AI response
+      const response = await fetch("/chat", {
+        method: "POST",
+        body: new URLSearchParams({ user_message: message }),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" }
+      });
+      const data = await response.json();
+
+      // Remove loader and show answer
+      loader.remove();
+      chatBox.innerHTML += `<div class="message bot-message">${data.answer}</div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+  </script>
+</body>
+</html>
