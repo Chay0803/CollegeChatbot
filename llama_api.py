@@ -33,24 +33,32 @@ from dotenv import load_dotenv
 import os
 from openai import OpenAI
 
-# Load .env
+# Load environment variables
 load_dotenv()
-print("🔑 Loaded key prefix:", os.getenv("OPENROUTER_API_KEY")[:15])
-# Load OpenRouter API client
+
+OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
+
+if not OPENROUTER_KEY:
+    raise ValueError("❌ Missing OPENROUTER_API_KEY in .env")
+
+print("🔑 Loaded key prefix:", OPENROUTER_KEY[:15])
+
+# Initialize OpenRouter API client
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY", "<OPENROUTER_API_KEY>"),  # Replace if not using env vars
+    api_key=OPENROUTER_KEY,
 )
 
+
+# 🧠 Non-streaming function
 def ask_ollama(prompt: str, model_name: str = "meta-llama/llama-4-scout:free"):
     """
-    Sends a prompt to the OpenRouter API and returns the generated text response.
-    (Maintains backward compatibility with previous function name.)
+    Sends a prompt to OpenRouter and returns the full response text.
     """
     completion = client.chat.completions.create(
         extra_headers={
-            "HTTP-Referer": "https://ifheindia.org",  # Optional, for OpenRouter rankings
-            "X-Title": "IFHE College Chatbot",       # Optional, project name
+            "HTTP-Referer": "https://ifheindia.org",  # optional (for OpenRouter analytics)
+            "X-Title": "IFHE Chatbot",               # project title
         },
         model=model_name,
         messages=[
@@ -62,21 +70,38 @@ def ask_ollama(prompt: str, model_name: str = "meta-llama/llama-4-scout:free"):
     return completion.choices[0].message.content.strip()
 
 
-# Optional: Streaming support (if you want real-time typing effect later)
-def ask_ollama_stream(prompt: str, model_name: str = "meta-llama/llama-3.3-8b-instruct:free"):
+def ask_ollama_stream(prompt: str, model_name: str = "meta-llama/llama-4-scout:free"):
     """
-    Streams response from OpenRouter model.
+    Streams response token-by-token for real-time output.
+    Includes detailed logging for debugging.
     """
-    stream = client.chat.completions.create(
-        model=model_name,
-        messages=[
-            {"role": "system", "content": "You are a helpful academic assistant for IFHE University."},
-            {"role": "user", "content": prompt},
-        ],
-        stream=True,
-    )
+    try:
+        print(f"🚀 Connecting to OpenRouter model: {model_name}")
+        stream = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://ifheindia.org",
+                "X-Title": "IFHE Chatbot",
+            },
+            model=model_name,
+            messages=[
+                {"role": "system", "content": "You are a helpful academic assistant for IFHE University."},
+                {"role": "user", "content": prompt},
+            ],
+            stream=True,
+        )
 
-    for chunk in stream:
-        content = chunk.choices[0].delta.get("content", "")
-        if content:
-            yield content
+        for chunk in stream:
+            # Log structure of each chunk
+            print(f"📦 Chunk received: {chunk}")
+            if hasattr(chunk.choices[0].delta, "content"):
+                text = chunk.choices[0].delta.content
+                if text:
+                    print(f"🧩 Token: {text!r}")
+                    yield text
+
+        print("✅ Streaming complete.")
+
+    except Exception as e:
+        print("⚠️ Streaming error (inside llama_api):", e)
+        yield f"⚠️ Error while streaming: {str(e)}"
+

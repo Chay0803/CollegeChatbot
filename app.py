@@ -332,6 +332,9 @@ import uuid
 import pandas as pd
 from llama_api import ask_ollama
 from load_docs import get_vectorstore
+from course_matcher import match_courses
+
+
 
 # -------------------------------------------------
 # INIT
@@ -419,44 +422,53 @@ async def serve_home(request: Request, session_id: str | None = Cookie(default=N
 
 @app.post("/chat")
 async def chat(request: Request, user_message: str = Form(...)):
+    """
+    Returns a complete chatbot response (non-streaming).
+    """
     try:
-        # The detailed context prompt from your Streamlit app
+        # Normalize and retrieve context
+        query = normalize_query(user_message)
+        docs = retriever.get_relevant_documents(query)
+        context = "\n\n".join([d.page_content for d in docs[:10]])
+
+        # Build the full academic assistant prompt
         prompt = f"""
         You are an academic assistant for IFHE University. Use the context below to answer the question clearly and helpfully.
-
         The context includes various documents and FAQs related to IFHE University’s programs, admissions, and academic details.
 
         Instructions:
         - If the question is about **courses**, list all courses offered by IFHE University (B.Tech, BBA, B.Sc, M.Tech, M.Sc, etc.) with their **specializations**.
-        - If the question is about **admissions** (including Postgraduate), provide details about:
+        - If the question is about **admissions** (including Postgraduate), provide:
           * Admission process
           * Important dates
           * Eligibility criteria
           * Required documents
-          * URLs for more information: 
+          * URLs for more information:
             - https://ifheindia.org/
             - https://ifheindia.org/online-registration/
-        - If the question is about **fees, scholarships, placements, campus facilities, faculty, or programs**, provide accurate and concise details.
+        - If the query is about **fees, scholarships, placements, campus facilities, faculty, or programs**, provide accurate and concise information based on the context.
         - If faculty details are asked, include:
           * URL: https://ifheindia.org/faculty/
-          * Mention that faculty details are available on the official website.
-        - Format the answer in **structured sections** (like headings and bullet points).
-        - Avoid emojis.
-        - Respond in a formal, academic tone.
+          * Mention that details of faculty members are available on the official website.
+        - Format the answer in structured sections with headings and bullet points.
+        - Avoid emojis. Respond in a formal, academic tone.
 
-        Now, here is the user question:
+        Context:
+        {context}
+
+        Question:
         {user_message}
+
+        Answer:
         """
 
+        # Get the complete model response
         response = ask_ollama(prompt)
-
-        return {"answer": response}
+        return JSONResponse({"answer": response})
 
     except Exception as e:
         print("⚠️ Chat Error:", e)
-        return {"answer": f"⚠️ Error: {str(e)}"}
-
-
+        return JSONResponse({"answer": f"⚠️ Error: {str(e)}"})
 
 @app.post("/reset", response_class=JSONResponse)
 async def reset_conversation(session_id: str = Form(...)):
@@ -487,7 +499,7 @@ async def search_employees(
         df = employees_df.copy()
 
         if search_type == "id":
-            result = df[df["id"].astype(str).str.lower() == value.lower()]
+            result = df[pd.to_numeric(df["name"].astype(str).str.lower() == value.lower())]
 
         elif search_type == "salary":
             result = df[pd.to_numeric(df["salary"], errors="coerce") >= float(value)]
@@ -506,6 +518,52 @@ async def search_employees(
     except Exception as e:
         print("⚠️ Employee search error:", e)
         return {"results": [], "error": str(e)}
+    
+@app.post("/recommend_courses")
+async def recommend_courses(
+    request: Request,
+    stream: str = Form(...),
+    interest: str = Form(...),
+    english: str = Form(...),
+    tenth: float = Form(...),
+    twelfth: float = Form(...),
+):
+    """
+    Recommend courses based on student's profile using the same logic from app1.py.
+    """
+    try:
+        if not (stream and interest and english):
+            return {"error": "Please fill all required fields."}
+
+        if tenth < 60 or twelfth < 60:
+            return {
+                "eligible": False,
+                "message": "You are not eligible. Minimum 60% required in both 10th and 12th."
+            }
+
+        profile = {
+            "stream": stream,
+            "interest": interest,
+            "english": english,
+            "10th": tenth,
+            "12th": twelfth
+        }
+
+        recs = match_courses(profile)
+
+        if recs:
+            return {
+                "eligible": True,
+                "recommendations": recs,
+                "apply_link": "https://ifheindia.org/online-registration"
+            }
+        else:
+            return {"eligible": True, "recommendations": []}
+
+    except Exception as e:
+        print("⚠️ Course recommendation error:", e)
+        return {"error": str(e)}
+
 
 # ------------------- PAGE ROUTES -------------------
 

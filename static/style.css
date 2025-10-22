@@ -360,3 +360,19 @@ form button:hover {
 .chat-message a:hover {
   color: var(--highlight);
 }
+
+.results button {
+  background: var(--accent);
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.1s;
+}
+
+.results button:hover {
+  background: var(--primary);
+  transform: translateY(-1px);
+}

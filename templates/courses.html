@@ -2,39 +2,84 @@
 {% block content %}
 <section class="form-section">
   <h2>🎓 Course Recommender</h2>
+
   <form id="course-form">
-    <label>Stream</label>
+    <label>Stream:</label>
     <select name="stream" required>
-      <option value="">Select</option>
-      <option>Science</option>
-      <option>Commerce</option>
-      <option>Arts</option>
+      <option value="">-- Select --</option>
+      <option value="Science">Science</option>
+      <option value="Commerce">Commerce</option>
+      <option value="Arts">Arts</option>
     </select>
 
-    <label>Interest</label>
+    <label>Area of Interest:</label>
     <select name="interest" required>
-      <option value="">Select</option>
-      <option>Tech</option>
-      <option>Law</option>
-      <option>Management</option>
+      <option value="">-- Select --</option>
+      <option value="Tech">Tech</option>
+      <option value="Law">Law</option>
+      <option value="Management">Management</option>
     </select>
 
-    <label>English Proficiency</label>
+    <label>Comfortable in English:</label>
     <select name="english" required>
-      <option value="">Select</option>
-      <option>Yes</option>
-      <option>No</option>
+      <option value="">-- Select --</option>
+      <option value="Yes">Yes</option>
+      <option value="No">No</option>
     </select>
 
-    <label>10th %</label>
-    <input type="number" name="tenth" step="0.1" required>
+    <label>10th Percentage:</label>
+    <input type="number" name="tenth" min="0" max="100" step="0.1" required>
 
-    <label>12th %</label>
-    <input type="number" name="twelfth" step="0.1" required>
+    <label>12th Percentage:</label>
+    <input type="number" name="twelfth" min="0" max="100" step="0.1" required>
 
     <button type="submit">Recommend</button>
   </form>
+
   <div id="course-results" class="results"></div>
 </section>
-<script src="/static/courses.js"></script>
+
+<script>
+  document.getElementById("course-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const resDiv = document.getElementById("course-results");
+    resDiv.innerHTML = "⏳ Fetching recommendations...";
+
+    try {
+      const response = await fetch("/recommend_courses", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        resDiv.innerHTML = `<p style="color:red;">⚠️ ${data.error}</p>`;
+        return;
+      }
+
+      if (!data.eligible) {
+        resDiv.innerHTML = `<p style="color:red;">${data.message}</p>`;
+        return;
+      }
+
+      if (data.recommendations.length > 0) {
+        resDiv.innerHTML = `
+          <h3>Recommended Courses:</h3>
+          <ul>${data.recommendations.map(c => `<li>${c}</li>`).join("")}</ul>
+          <a href="${data.apply_link}" target="_blank">
+            <button type="submit">Apply Now</button>
+          </a>
+        `;
+      } else {
+        resDiv.innerHTML = "ℹ️ No matching courses found.";
+      }
+
+    } catch (err) {
+      console.error(err);
+      resDiv.innerHTML = "⚠️ Error fetching recommendations.";
+    }
+  });
+</script>
 {% endblock %}
