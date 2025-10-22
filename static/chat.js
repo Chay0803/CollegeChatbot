@@ -33,6 +33,7 @@ function removeTypingIndicator() {
   if (indicator) indicator.remove();
 }
 
+// Send message to backend
 chatForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const userMessage = chatInput.value.trim();
@@ -40,22 +41,22 @@ chatForm.addEventListener("submit", async (e) => {
 
   addMessage("user", userMessage);
   chatInput.value = "";
+
   showTypingIndicator();
 
   try {
-    const response = await fetch("/chat", {
+    const res = await fetch("/chat", {
       method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ user_message: userMessage }),
     });
+    const data = await res.json();
 
-    const data = await response.json();
     removeTypingIndicator();
-    addMessage("bot", marked.parse(data.answer)); // render markdown
-
+    addMessage("bot", data.answer || "⚠️ No response received.");
   } catch (err) {
-    console.error("⚠️ Chat error:", err);
     removeTypingIndicator();
-    addMessage("bot", "⚠️ Error connecting to server. Please try again.");
+    addMessage("bot", "⚠️ Error connecting to server.");
+    console.error(err);
   }
 });
-
