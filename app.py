@@ -584,3 +584,9 @@ async def courses_page(request: Request):
 async def employees_page(request: Request):
     return templates.TemplateResponse("employees.html", {"request": request})
 
+import os
+import uvicorn
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))  # Render will inject $PORT
+    uvicorn.run("app:app", host="0.0.0.0", port=port)
