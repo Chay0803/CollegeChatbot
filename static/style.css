@@ -1,236 +1,288 @@
 /* ==========================
-   GLOBAL THEME VARIABLES
+   IFHE Assistant UI Styling
 ========================== */
+
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Poppins:wght@400;500;600&display=swap');
+
+/* --- Global Variables --- */
 :root {
-  --primary: #003366;         /* Deep IFHE blue */
-  --accent: #00509e;          /* Bright blue accent */
-  --highlight: #ffcc00;       /* Gold highlight */
-  --light-bg: #f4f8fc;        /* Page background */
-  --card-bg: #ffffff;         /* Card background */
-  --text-dark: #0c1c3a;       /* Main text */
-  --radius: 12px;             /* Rounded corners */
+  --primary: #1b3a7a;     /* Deep IFHE blue */
+  --accent: #274b9f;      /* Bright blue */
+  --highlight: #ffcc00;   /* Gold accent */
+  --card-bg: #ffffff;
+  --light-bg: #f4f8fc;
+  --text-dark: #0c1c3a;
+  --radius: 12px;
   --shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
 
-/* ==========================
-   GLOBAL LAYOUT
-========================== */
-body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: var(--light-bg);
-  color: var(--text-dark);
+/* --- Global Reset --- */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
   margin: 0;
   padding: 0;
+  width: 100%;
+  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+  background: var(--light-bg);
+  color: var(--text-dark);
   line-height: 1.6;
 }
 
-h1, h2, h3 {
-  color: var(--primary);
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
-
-a:hover {
-  color: var(--highlight);
-}
-
 /* ==========================
-   NAVBAR
+   HEADER (Centered IFHE Assistant)
 ========================== */
-.navbar {
+header {
+  position: sticky;
+  top: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--primary);
-  color: white;
-  padding: 14px 40px;
-  box-shadow: var(--shadow);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  background: rgba(27, 58, 122, 0.97);
+  color: #fff;
+  padding: 0.6rem 1.5rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  box-sizing: border-box;
 }
 
-.navbar .logo {
-  font-size: 20px;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-}
-
-.nav-links a {
-  color: white;
-  text-decoration: none;
-  margin-left: 25px;
-  font-weight: 600;
-  font-size: 15px;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.nav-links a::after {
-  content: "";
-  position: absolute;
-  width: 0%;
-  height: 2px;
-  bottom: -4px;
-  left: 0;
-  background: var(--highlight);
-  transition: width 0.3s;
-}
-
-.nav-links a:hover::after {
-  width: 100%;
-}
-
-/* ==========================
-   MAIN CONTENT AREA
-========================== */
-.content {
-  padding: 40px 20px;
-  max-width: 900px;
-  margin: auto;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ==========================
-   FOOTER
-========================== */
-.footer {
+/* Centered Title */
+.brand-title {
+  flex: 1;
   text-align: center;
-  padding: 15px;
-  background: var(--primary);
-  color: white;
-  font-size: 14px;
-  margin-top: 50px;
-  box-shadow: 0 -3px 10px rgba(0,0,0,0.05);
+  font-family: "Montserrat", "Poppins", sans-serif;
+  font-weight: 700;
+  font-size: 1.9rem;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  margin: 0;
+  text-transform: uppercase;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+
+/* Left & Right Containers for layout balance */
+.nav-left {
+  flex: 0.2;
+}
+
+.nav-right {
+  flex: 0.2;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 /* ==========================
-   CHATBOT PAGE
+   HAMBURGER DROPDOWN MENU
+========================== */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropbtn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.dropbtn:hover {
+  color: var(--highlight);
+}
+
+.menu-icon {
+  font-size: 26px;
+  line-height: 1;
+}
+
+/* Dropdown content styling */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 48px; /* perfectly below icon */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1000;
+  min-width: 220px;
+}
+
+/* Show dropdown on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+/* Dropdown links */
+.dropdown-content a {
+  display: block;
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 12px 16px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-content a:hover {
+  background-color: #f1f5ff;
+  color: var(--accent);
+}
+
+/* ==========================
+   MAIN LAYOUT
+========================== */
+main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+section {
+  margin-top: 25px;
+  margin-bottom: 25px;
+}
+
+/* ==========================
+   CHATBOT SECTION
 ========================== */
 .chat-section {
-  text-align: center;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .chat-container {
-  background: var(--card-bg);
-  box-shadow: var(--shadow);
-  border-radius: var(--radius);
-  padding: 20px;
-  height: 70vh;
+  width: 100%;
+  max-width: 850px;
+  height: 65vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  margin-top: 20px;
+  background: #f9fbff;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.05);
+  padding: 15px;
 }
 
 .chat-box {
   flex: 1;
   overflow-y: auto;
-  margin-bottom: 15px;
-  padding-right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px;
+  text-align: left;
   scroll-behavior: smooth;
-}
-
-.chat-message {
-  padding: 10px 15px;
-  margin: 8px 0;
-  border-radius: var(--radius);
-  max-width: 75%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  animation: slideUp 0.3s ease;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  margin-bottom: 15px;
 }
 
 .user-message {
+  align-self: flex-end;
   background: var(--accent);
   color: white;
-  align-self: flex-end;
-  border-bottom-right-radius: 0;
+  border-radius: 12px 12px 0 12px;
+  padding: 10px 14px;
+  max-width: 75%;
+  text-align: left;
+  line-height: 1.6;
 }
 
 .bot-message {
+  align-self: flex-start;
   background: #e7eefb;
   color: var(--primary);
-  align-self: flex-start;
-  border-bottom-left-radius: 0;
+  border-radius: 12px 12px 12px 0;
+  padding: 10px 14px;
+  max-width: 75%;
+  text-align: left;
+  line-height: 1.6;
 }
 
-.typing {
-  font-style: italic;
-  opacity: 0.8;
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 0.6; }
-  50% { opacity: 1; }
-}
-
+/* Input Form */
 .chat-form {
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 10px;
+  background: #f8f9fb;
+  border-radius: 10px;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.05);
+  padding: 10px 12px;
 }
 
 .chat-form textarea {
   flex: 1;
-  resize: none;
-  border-radius: 8px;
+  width: 70%;
+  max-width: 700px;
+  min-height: 45px;
   border: 1px solid #ccc;
-  padding: 10px;
+  border-radius: 8px;
+  padding: 10px 12px;
   font-size: 15px;
-  height: 45px;
-  transition: border 0.2s;
+  resize: none;
+  text-align: left;
+  background: #fff;
 }
 
 .chat-form textarea:focus {
   border-color: var(--accent);
   outline: none;
+  box-shadow: 0 0 4px rgba(27, 58, 122, 0.3);
 }
 
 .chat-form button {
+  height: 45px;
+  padding: 0 20px;
   background: var(--primary);
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 0 18px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 15px;
-  transition: background 0.3s;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 
 .chat-form button:hover {
   background: var(--accent);
+  transform: translateY(-2px);
 }
 
 /* ==========================
-   COURSE RECOMMENDER + EMPLOYEE FORMS
+   COURSE & EMPLOYEE FORMS
 ========================== */
 .form-section {
-  margin-top: 20px;
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+  max-width: 850px;
+  margin: 0 auto;
 }
 
 .form-section form {
-  background: var(--card-bg);
-  box-shadow: var(--shadow);
-  border-radius: var(--radius);
-  padding: 25px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 1rem;
 }
 
 .form-section label {
@@ -238,125 +290,91 @@ a:hover {
   color: var(--primary);
 }
 
-form input, form select {
-  padding: 10px;
+form input,
+form select {
+  padding: 0.6rem 0.8rem;
   border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 15px;
-  transition: border 0.3s;
+  font-size: 1rem;
 }
 
-form input:focus, form select:focus {
+form input:focus,
+form select:focus {
   border-color: var(--accent);
   outline: none;
+  box-shadow: 0 0 4px rgba(27, 58, 122, 0.3);
 }
 
 form button {
-  background: var(--accent);
+  background-color: var(--accent);
   color: white;
-  padding: 10px;
   border: none;
   border-radius: 8px;
+  padding: 10px 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s, transform 0.1s;
+  transition: all 0.25s ease;
 }
 
 form button:hover {
-  background: var(--primary);
-  transform: translateY(-1px);
+  background-color: var(--primary);
+  transform: translateY(-2px);
 }
 
 /* ==========================
-   RESULTS STYLING
+   RESULTS BOX
 ========================== */
 .results {
+  margin-top: 1.5rem;
   background: #f1f5ff;
-  padding: 15px;
-  margin-top: 25px;
   border-radius: var(--radius);
+  padding: 1rem;
   box-shadow: var(--shadow);
-}
-
-.results ul {
-  list-style: disc;
-  margin-left: 20px;
-}
-
-.results-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-  background: white;
-  box-shadow: var(--shadow);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-.results-table th {
-  background: var(--accent);
-  color: white;
-  padding: 10px;
-  text-align: left;
-  font-weight: 600;
-}
-
-.results-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.results-table tr:hover {
-  background: #f7faff;
 }
 
 /* ==========================
-   RESPONSIVE DESIGN
+   FOOTER
+========================== */
+footer {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  color: #fff;
+  background: var(--primary);
+  margin-top: 40px;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================
+   RESPONSIVE
 ========================== */
 @media (max-width: 768px) {
-  .navbar {
+  header {
     flex-direction: column;
-    align-items: flex-start;
+    padding: 1rem;
   }
 
-  .nav-links {
-    margin-top: 10px;
+  .brand-title {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
   }
 
-  .content {
-    padding: 20px;
-  }
-
-  .chat-container {
-    height: 65vh;
+  .chat-form {
+    flex-direction: column;
   }
 
   .chat-form button {
-    padding: 0 14px;
+    width: 100%;
   }
 }
-.chat-message h2, 
-.chat-message h3, 
-.chat-message h4 {
-  color: var(--accent);
-  margin: 8px 0 4px;
-  font-weight: 600;
-}
 
-.chat-message ul, 
-.chat-message ol {
-  margin: 6px 0 6px 20px;
-}
-
-.chat-message li {
-  line-height: 1.6;
-}
-
-.chat-message a {
-  color: var(--accent);
-  text-decoration: underline;
-}
-
-.chat-message a:hover {
-  color: var(--highlight);
+/* === Dynamic height adjustment for smaller screens === */
+@media (max-height: 800px) {
+  .chat-container {
+    height: 60vh;
+  }
+  section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
 }

@@ -7,14 +7,28 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header class="navbar">
-    <div class="logo">🎓 IFHE Assistant</div>
-    <nav class="nav-links">
-      <a href="/chat">Chatbot</a>
-      <a href="/courses">Course Recommender</a>
-      <a href="/employees">Employee Lookup</a>
-    </nav>
-  </header>
+  <header>
+  <div class="nav-left"></div>
+
+  <h1 class="brand-title">
+    <span class="brand-highlight">IFHE</span> Assistant
+  </h1>
+
+  <nav class="nav-right">
+    <ul>
+      <div class="dropdown">
+  <button class="dropbtn"><span class="menu-icon">☰</span></button>
+  <div class="dropdown-content">
+    <a href="/chat">Chatbot</a>
+    <a href="/courses">Course Recommender</a>
+    <a href="/employees">Employee Lookup</a>
+  </div>
+</div>
+
+    </ul>
+  </nav>
+</header>
+
 
   <main class="content">
     {% block content %}{% endblock %}
