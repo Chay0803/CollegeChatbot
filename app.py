@@ -333,7 +333,7 @@ import pandas as pd
 from llama_api import ask_ollama
 from load_docs import get_vectorstore
 from course_matcher import match_courses
-
+from fastapi.responses import RedirectResponse
 
 
 # -------------------------------------------------
@@ -499,7 +499,7 @@ async def search_employees(
         df = employees_df.copy()
 
         if search_type == "id":
-            result = df[pd.to_numeric(df["name"].astype(str).str.lower() == value.lower())]
+            result = df[df["empid"].astype(str).str.lower() == value]
 
         elif search_type == "salary":
             result = df[pd.to_numeric(df["salary"], errors="coerce") >= float(value)]
@@ -567,9 +567,9 @@ async def recommend_courses(
 
 # ------------------- PAGE ROUTES -------------------
 
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse("chat.html", {"request": request})
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url="/chat")
 
 @app.get("/chat", response_class=HTMLResponse)
 async def chat_page(request: Request):
