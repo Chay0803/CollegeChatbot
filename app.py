@@ -452,6 +452,8 @@ async def chat(request: Request, user_message: str = Form(...)):
           * Mention that details of faculty members are available on the official website.
         - Format the answer in structured sections with headings and bullet points.
         - Avoid emojis. Respond in a formal, academic tone.
+        - For user manual questions, provide step-by-step guidance, and provide data only from the context.
+        
 
         Context:
         {context}

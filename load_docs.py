@@ -183,3 +183,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+def get_vectorstore():
+    """Load and return the latest Chroma vectorstore."""
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    if os.path.exists(PERSIST_DIR) and os.listdir(PERSIST_DIR):
+        print("🔍 Loading Chroma vectorstore via get_vectorstore()...")
+        vectorstore = Chroma(persist_directory=PERSIST_DIR, embedding_function=embeddings)
+        return vectorstore
+    else:
+        print("⚠️ No vectorstore found. Run load_docs.py first to build it.")
+        return None

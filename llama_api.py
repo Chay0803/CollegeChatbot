@@ -41,7 +41,7 @@ OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
 if not OPENROUTER_KEY:
     raise ValueError("❌ Missing OPENROUTER_API_KEY in .env")
 
-print("🔑 Loaded key prefix:", OPENROUTER_KEY[:15])
+print("Loaded key prefix:", OPENROUTER_KEY[:15])
 
 # Initialize OpenRouter API client
 client = OpenAI(
