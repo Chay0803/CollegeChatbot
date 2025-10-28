@@ -429,7 +429,7 @@ async def chat(request: Request, user_message: str = Form(...)):
         # Normalize and retrieve context
         query = normalize_query(user_message)
         docs = retriever.get_relevant_documents(query)
-        context = "\n\n".join([d.page_content for d in docs[:10]])
+        context = "\n\n".join([d.page_content for d in docs[:30]])
 
         # Build the full academic assistant prompt
         prompt = f"""
@@ -452,8 +452,8 @@ async def chat(request: Request, user_message: str = Form(...)):
           * Mention that details of faculty members are available on the official website.
         - Format the answer in structured sections with headings and bullet points.
         - Avoid emojis. Respond in a formal, academic tone.
-        - For user manual questions, provide step-by-step guidance, and provide data only from the context.
-        
+        - Do not give the information in tabular format.
+        - When asked about placements include information about top recruiters provide the information about placements and top recruiters at IFHE. If needed use the url https://ifheindia.org/placements/ for more details. Also mention top packages offered during placements including average package branch wise.
 
         Context:
         {context}
