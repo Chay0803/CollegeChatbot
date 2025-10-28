@@ -5,7 +5,7 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 
 
-DATA_DIR = os.environ.get("DATA_DIR", "data1")
+DATA_DIR = os.environ.get("DATA_DIR", "data")
 pdf_files = [os.path.join(DATA_DIR, f) for f in os.listdir(DATA_DIR) if f.endswith(".pdf")]
 
 documents = []
