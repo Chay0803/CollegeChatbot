@@ -2,6 +2,7 @@
 {% block content %}
 <section class="form-section">
   <h2>👨‍💼 Employee Lookup</h2>
+
   <form id="employee-form">
     <label>Search by:</label>
     <select name="search_type" required>
@@ -15,7 +16,11 @@
     <button type="submit">Search</button>
   </form>
 
-  <div id="employee-results" class="results"></div>
+  <!-- ✅ Results container (scrolls internally) -->
+  <div id="employee-results" class="results">
+    <!-- Table will be dynamically inserted here by employees.js -->
+  </div>
 </section>
+
 <script src="/static/employees.js"></script>
 {% endblock %}

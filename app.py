@@ -420,6 +420,88 @@ async def serve_home(request: Request, session_id: str | None = Cookie(default=N
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+# @app.post("/chat")
+# async def chat(request: Request, user_message: str = Form(...)):
+#     """
+#     Returns a complete chatbot response (non-streaming).
+#     """
+#     try:
+#         # Normalize and retrieve context
+#         query = normalize_query(user_message)
+#         docs = retriever.get_relevant_documents(query)
+#         user_lower = user_message.lower()
+
+# # --- Context Filtering ---
+#         if "fee management" in user_lower or "management system" in user_lower:
+#     # ✅ User explicitly asked about Fee Management System
+#             context = "\n\n".join([
+#                 d.page_content for d in docs[:30]
+#                 if "fee management" in d.page_content.lower() or "management system" in d.page_content.lower()
+#             ])
+#         elif "fee" in user_lower or "fees" in user_lower:
+#     # ✅ User is asking about fees — filter out Fee Management System and admin/manual sections
+#             context = "\n\n".join([
+#                 d.page_content for d in docs[:30]
+#                 if "fee management system" not in d.page_content.lower()
+#                 and "user manual" not in d.page_content.lower()
+#                 and "add or delete" not in d.page_content.lower()
+#                 and "component" not in d.page_content.lower()
+#                 and any(keyword in d.page_content.lower() for keyword in [
+#                     "b.tech", "bca", "b.sc", "fee structure", "academic", "caution deposit", "hostel", "transport"
+#                 ])
+#             ])
+#         elif any(x in user_lower for x in ["admission", "important dates", "atit", "eligibility", "phase", "calendar"]):
+#     # Admission related query
+#             context = "\n\n".join([
+#                 d.page_content for d in docs[:30]
+#                 if any(word in d.page_content.lower() for word in [
+#                     "admission", "calendar", "atit", "phase", "eligibility", "reporting", "deeksharambh"
+#                 ])
+#             ])
+#         else:
+#     # Default context
+#             context = "\n\n".join([d.page_content for d in docs[:30]])
+
+#         # Build the full academic assistant prompt
+#         prompt = f"""
+#         You are an academic assistant for IFHE University. Use the context below to answer the question clearly and helpfully.
+#         The context includes various documents and FAQs related to IFHE University’s programs, admissions, and academic details.
+
+#         Instructions:
+#         - If the question is about **courses**, list all courses offered by IFHE University (B.Tech, BBA, B.Sc, M.Tech, M.Sc, etc.) with their **specializations**.
+#         - If the question is about **admissions** (including Postgraduate), provide:
+#           * Admission process
+#           * Important dates
+#           * Eligibility criteria
+#           * Required documents
+#           * URLs for more information:
+#             - https://ifheindia.org/
+#             - https://ifheindia.org/online-registration/
+#         - If the query is about **fees, scholarships, placements, campus facilities, faculty, or programs**, provide accurate and concise information based on the context. Do not show "No context available" because fee details are present in the documents.
+#         - If faculty details are asked, include:
+#           * URL: https://ifheindia.org/faculty/
+#           * Mention that details of faculty members are available on the official website.
+#         - Format the answer in structured sections with headings and bullet points.
+#         - Avoid emojis. Respond in a formal, academic tone.
+#         - Do not give the information in tabular format.
+#         - When asked about placements include information about top recruiters provide the information about placements and top recruiters at IFHE. If needed use the url https://ifheindia.org/placements/ for more details. Also mention top packages offered during placements including average package branch wise.
+#         - If response is containing any tabular data then show that table with proper margins and paddings.
+#         - Do not show the context from User Manual if details about fees is asked. Show only the relevant information about fees from other documents.
+#         {context}
+
+#         Question:
+#         {user_message}
+
+#         Answer:
+#         """
+
+#         # Get the complete model response
+#         response = ask_ollama(prompt)
+#         return JSONResponse({"answer": response})
+
+#     except Exception as e:
+#         print("⚠️ Chat Error:", e)
+#         return JSONResponse({"answer": f"⚠️ Error: {str(e)}"})
 @app.post("/chat")
 async def chat(request: Request, user_message: str = Form(...)):
     """
@@ -429,16 +511,80 @@ async def chat(request: Request, user_message: str = Form(...)):
         # Normalize and retrieve context
         query = normalize_query(user_message)
         docs = retriever.get_relevant_documents(query)
-        context = "\n\n".join([d.page_content for d in docs[:30]])
+        user_lower = user_message.lower()
 
-        # Build the full academic assistant prompt
+        # --- Context Filtering Logic ---
+        if "fee management" in user_lower or "management system" in user_lower:
+            # User explicitly asked about Fee Management System
+            context = "\n\n".join([
+                d.page_content for d in docs[:40]
+                if "fee management" in d.page_content.lower() or "management system" in d.page_content.lower()
+            ])
+
+        elif any(x in user_lower for x in ["b.tech", "btech", "bca", "b.sc", "bsc"]) and "fee" in user_lower:
+            # ✅ B.Tech/BCA/B.Sc fee queries → prioritize Admission Modalities 2025 PDF data
+            context = "\n\n".join([
+                d.page_content for d in docs[:80]
+                if any(k in d.page_content.lower() for k in [
+                    "admission fee", "caution deposit", "program fee", "semester fee",
+                    "b.tech", "bca", "b.sc", "hostel", "mess", "transport", "fee per semester"
+                ])
+                and "fee management system" not in d.page_content.lower()
+                and "user manual" not in d.page_content.lower()
+                and "overview" not in d.page_content.lower()
+                and "approximate" not in d.page_content.lower()
+                and "summary" not in d.page_content.lower()
+            ])
+
+            # If still no numeric values found, fall back to official 2024-25 fee structure
+            if not context.strip():
+                context = "\n\n".join([
+                    d.page_content for d in docs[:80]
+                    if "academic year 2024-25" in d.page_content.lower()
+                ])
+
+        elif any(x in user_lower for x in ["mba", "m.tech", "mtech", "msc", "mca", "postgraduate"]) and "fee" in user_lower:
+            # ✅ PG fee queries → use Fee Overview document
+            context = "\n\n".join([
+                d.page_content for d in docs[:60]
+                if any(k in d.page_content.lower() for k in [
+                    "fee structure overview", "postgraduate", "mba", "m.tech", "m.sc", "mca"
+                ])
+                or "approximate annual tuition" in d.page_content.lower()
+            ])
+
+        elif "fee" in user_lower or "fees" in user_lower:
+            # ✅ General university fee query → use 2024-25 structure, skip admin content
+            context = "\n\n".join([
+                d.page_content for d in docs[:60]
+                if "academic year 2024-25" in d.page_content.lower()
+                or "fee structure" in d.page_content.lower()
+                and "fee management system" not in d.page_content.lower()
+                and "user manual" not in d.page_content.lower()
+                and "add or delete" not in d.page_content.lower()
+            ])
+
+        elif any(x in user_lower for x in ["admission", "important dates", "atit", "eligibility", "phase", "calendar"]):
+            # ✅ Admission-related query
+            context = "\n\n".join([
+                d.page_content for d in docs[:50]
+                if any(word in d.page_content.lower() for word in [
+                    "admission", "calendar", "atit", "eligibility", "phase", "reporting", "deeksharambh"
+                ])
+            ])
+
+        else:
+            # Default context for other queries
+            context = "\n\n".join([d.page_content for d in docs[:40]])
+
+        # --- Build the academic assistant prompt (same as your version) ---
         prompt = f"""
         You are an academic assistant for IFHE University. Use the context below to answer the question clearly and helpfully.
         The context includes various documents and FAQs related to IFHE University’s programs, admissions, and academic details.
 
         Instructions:
         - If the question is about **courses**, list all courses offered by IFHE University (B.Tech, BBA, B.Sc, M.Tech, M.Sc, etc.) with their **specializations**.
-        - If the question is about **admissions** (including Postgraduate), provide:
+        - If the question is about **admissions** (including B.Tech, BBA, M.Tech and others), provide:
           * Admission process
           * Important dates
           * Eligibility criteria
@@ -446,7 +592,7 @@ async def chat(request: Request, user_message: str = Form(...)):
           * URLs for more information:
             - https://ifheindia.org/
             - https://ifheindia.org/online-registration/
-        - If the query is about **fees, scholarships, placements, campus facilities, faculty, or programs**, provide accurate and concise information based on the context.
+        - If the query is about **fees, scholarships, placements, campus facilities, faculty, or programs**, provide accurate and concise information based on the context. Do not show "No context available" because fee details are present in the documents.
         - If faculty details are asked, include:
           * URL: https://ifheindia.org/faculty/
           * Mention that details of faculty members are available on the official website.
@@ -454,8 +600,9 @@ async def chat(request: Request, user_message: str = Form(...)):
         - Avoid emojis. Respond in a formal, academic tone.
         - Do not give the information in tabular format.
         - When asked about placements include information about top recruiters provide the information about placements and top recruiters at IFHE. If needed use the url https://ifheindia.org/placements/ for more details. Also mention top packages offered during placements including average package branch wise.
+        - If response is containing any tabular data then show that table with proper margins and paddings.
+        - Do not show the context from User Manual if details about fees is asked. Show only the relevant information about fees from other documents.
 
-        Context:
         {context}
 
         Question:
@@ -464,13 +611,15 @@ async def chat(request: Request, user_message: str = Form(...)):
         Answer:
         """
 
-        # Get the complete model response
+        # --- Get model response ---
         response = ask_ollama(prompt)
         return JSONResponse({"answer": response})
 
     except Exception as e:
         print("⚠️ Chat Error:", e)
         return JSONResponse({"answer": f"⚠️ Error: {str(e)}"})
+
+
 
 @app.post("/reset", response_class=JSONResponse)
 async def reset_conversation(session_id: str = Form(...)):

@@ -45,7 +45,7 @@ header {
   align-items: center;
   background: rgba(27, 58, 122, 0.97);
   color: #fff;
-  padding: 0.6rem 1.5rem;
+  padding: 0.2rem 1rem;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   backdrop-filter: blur(6px);
   z-index: 1000;
@@ -58,7 +58,7 @@ header {
   text-align: center;
   font-family: "Montserrat", "Poppins", sans-serif;
   font-weight: 700;
-  font-size: 1.9rem;
+  font-size: 1.4rem;
   letter-spacing: 0.5px;
   color: #ffffff;
   margin: 0;
@@ -174,7 +174,7 @@ section {
 .chat-container {
   width: 100%;
   max-width: 900px;
-  height: 90vh;
+  height: calc(100vh - 160px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -194,7 +194,7 @@ section {
   padding: 10px;
   text-align: left;
   scroll-behavior: smooth;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .user-message {
@@ -271,6 +271,11 @@ section {
   transform: translateY(-2px);
 }
 
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
 /* ==========================
    COURSE & EMPLOYEE FORMS
 ========================== */
@@ -343,10 +348,10 @@ footer {
   text-align: center;
   padding: 0.35rem 0;
   font-size: 0.8rem;
-  color: #fff;
-  background: var(--primary);
+  color: var(--text-dark);
+  background: transparent;
   margin-top: 5px;
-  box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 
 /* ==========================
@@ -437,3 +442,132 @@ footer {
     white-space: nowrap;
   }
 }
+
+/* ==========================
+   FINAL — Perfect Page Fit (Header, Chat, Footer Visible)
+========================== */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* prevent page scroll */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Keep header and footer in natural flow */
+header {
+  flex-shrink: 0;
+}
+
+footer {
+  flex-shrink: 0;
+}
+
+/* Main fills the space between header and footer */
+main.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+/* Center chat section properly */
+.chat-section {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+/* Keep the same size and styling */
+.chat-container {
+  width: 100%;
+  max-width: 900px;
+  height: calc(100vh - 140px); /* fits exactly with header+footer */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #f9fbff;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.08);
+  padding: 20px 22px;
+  margin: 0 auto;
+}
+
+/* Only the chat box scrolls */
+.chat-box {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px;
+  text-align: left;
+  scroll-behavior: smooth;
+  margin-bottom: 10px;
+}
+
+/* ==========================
+   FINAL — Keep Header/Footer Same, Center Chat Perfectly
+========================== */
+
+main.content {
+  flex: 1;
+  display: flex;
+  align-items: center;       /* ✅ vertically center */
+  justify-content: center;   /* ✅ horizontally center */
+  padding: 10px 0;
+  margin: 0 auto;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Chat section centered within main */
+.chat-section {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: center;   /* ✅ horizontally center */
+  align-items: center;       /* ✅ vertically center */
+  margin: 10px 0;
+  padding: 0;
+}
+
+/* Chat container remains same style but centered perfectly */
+.chat-container {
+  width: 100%;
+  max-width: 900px;
+  height: calc(100vh - 180px); /* fits between header & footer */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #f9fbff;
+  border-radius: var(--radius);
+  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.08);
+  padding: 20px 22px;
+  margin: 0 auto; /* ✅ ensures it's perfectly centered horizontally */
+}
+.form-section {
+  max-height: calc(100vh - 180px); /* fits between header & footer */
+  overflow-y: auto;                /* enable scroll inside box */
+  scrollbar-width: thin;           /* Firefox */
+  scrollbar-color: var(--accent) #f1f5ff;
+}
+
+/* Employee results box scroll */
+.results {
+  max-height: calc(100vh - 180px); /* fits between header & footer */
+  overflow-y: auto;                /* enable scroll inside box */
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) #f1f5ff;
+}
+

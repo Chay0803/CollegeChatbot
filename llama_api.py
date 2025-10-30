@@ -51,7 +51,7 @@ client = OpenAI(
 
 
 # 🧠 Non-streaming function
-def ask_ollama(prompt: str, model_name: str = "openai/gpt-oss-20b:free"):
+def ask_ollama(prompt: str, model_name: str = "meta-llama/llama-3.3-8b-instruct:free"):
     """
     Sends a prompt to OpenRouter and returns the full response text.
     """
@@ -70,7 +70,7 @@ def ask_ollama(prompt: str, model_name: str = "openai/gpt-oss-20b:free"):
     return completion.choices[0].message.content.strip()
 
 
-def ask_ollama_stream(prompt: str, model_name: str = "openai/gpt-oss-20b:free"):
+def ask_ollama_stream(prompt: str, model_name: str = "meta-llama/llama-3.3-8b-instruct:free"):
     """
     Streams response token-by-token for real-time output.
     Includes detailed logging for debugging.
