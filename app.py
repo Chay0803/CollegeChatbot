@@ -332,9 +332,8 @@ import uuid
 import pandas as pd
 from llama_api import ask_ollama
 from load_docs import get_vectorstore
-from course_matcher import match_courses
+from course_matcher import CourseMatcher
 from fastapi.responses import RedirectResponse
-
 
 # -------------------------------------------------
 # INIT
@@ -602,7 +601,7 @@ async def chat(request: Request, user_message: str = Form(...)):
         - When asked about placements include information about top recruiters provide the information about placements and top recruiters at IFHE. If needed use the url https://ifheindia.org/placements/ for more details. Also mention top packages offered during placements including average package branch wise.
         - If response is containing any tabular data then show that table with proper margins and paddings.
         - Do not show the context from User Manual if details about fees is asked. Show only the relevant information about fees from other documents.
-
+        - Do not show urls everytime in the answer. Only show urls when fees, admissions or courses related information is asked.
         {context}
 
         Question:
@@ -700,7 +699,7 @@ async def recommend_courses(
             "12th": twelfth
         }
 
-        recs = match_courses(profile)
+        recs = CourseMatcher(profile)
 
         if recs:
             return {

@@ -53,21 +53,40 @@ client = OpenAI(
 # 🧠 Non-streaming function
 def ask_ollama(prompt: str, model_name: str = "meta-llama/llama-3.3-8b-instruct:free"):
     """
-    Sends a prompt to OpenRouter and returns the full response text.
+    Sends a prompt to OpenRouter (Llama-3.3-8B-Instruct) and returns the response text.
+    Handles missing fields, errors, and empty responses gracefully.
     """
-    completion = client.chat.completions.create(
-        extra_headers={
-            "HTTP-Referer": "https://ifheindia.org",  # optional (for OpenRouter analytics)
-            "X-Title": "IFHE Chatbot",               # project title
-        },
-        model=model_name,
-        messages=[
-            {"role": "system", "content": "You are a helpful academic assistant for IFHE University."},
-            {"role": "user", "content": prompt},
-        ],
-    )
+    try:
+        print(f"🚀 Sending request to OpenRouter model: {model_name}")
+        completion = client.chat.completions.create(
+            extra_headers={
+                "HTTP-Referer": "https://ifheindia.org",
+                "X-Title": "IFHE Chatbot",
+            },
+            model=model_name,
+            messages=[
+                {"role": "system", "content": "You are a helpful academic assistant for IFHE University. Quote only factual content from context."},
+                {"role": "user", "content": prompt},
+            ],
+        )
 
-    return completion.choices[0].message.content.strip()
+        # --- Safe parsing ---
+        if not hasattr(completion, "choices") or not completion.choices:
+            print("⚠️ No choices returned from OpenRouter.")
+            return "⚠️ No valid response received from the model."
+
+        message = getattr(completion.choices[0].message, "content", None)
+        if not message or not message.strip():
+            print("⚠️ Empty message content in completion.")
+            return "⚠️ The model did not return any text."
+
+        print("🧠 Model raw response:", message[:250])
+        return message.strip()
+
+    except Exception as e:
+        print("❌ OpenRouter / Llama API Error:", e)
+        return f"⚠️ Error communicating with the model: {e}"
+
 
 
 def ask_ollama_stream(prompt: str, model_name: str = "meta-llama/llama-3.3-8b-instruct:free"):

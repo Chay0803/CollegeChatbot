@@ -7,7 +7,7 @@
     <!-- Stream Selection -->
     <label for="stream">Stream:</label>
     <select id="stream" name="stream" required>
-      <option value="">-- Select --</option>
+      <option value="">-- Select Stream --</option>
       <option value="Science">Science</option>
       <option value="Commerce">Commerce</option>
       <option value="Arts">Arts</option>
@@ -17,14 +17,16 @@
     <div id="interest-container" style="display: none;">
       <label for="interest">Area of Interest:</label>
       <select id="interest" name="interest" required>
-        <option value="">-- Select --</option>
-        <option value="Tech">Tech</option>
+        <option value="">-- Select Area --</option>
+        <option value="Tech">Technology</option>
         <option value="Law">Law</option>
         <option value="Management">Management</option>
+        <option value="Economics">Economics</option>
+        <option value="Media">Media</option>
       </select>
     </div>
 
-    <!-- Other Inputs -->
+    <!-- English Proficiency -->
     <label for="english">Comfortable in English:</label>
     <select id="english" name="english" required>
       <option value="">-- Select --</option>
@@ -32,40 +34,39 @@
       <option value="No">No</option>
     </select>
 
+    <!-- Academic Details -->
     <label for="tenth">10th Percentage:</label>
     <input type="number" id="tenth" name="tenth" min="0" max="100" step="0.1" required>
 
     <label for="twelfth">12th Percentage:</label>
     <input type="number" id="twelfth" name="twelfth" min="0" max="100" step="0.1" required>
 
-    <button type="submit">Recommend</button>
+    <!-- Submit -->
+    <button type="submit">Recommend Courses</button>
   </form>
 
+  <!-- Results Section -->
   <div id="course-results" class="results"></div>
 </section>
 
-<!-- ========== SCRIPT SECTION ========== -->
 <script>
-  // Show Area of Interest only after Stream is selected
+  // === Show "Area of Interest" only after Stream selection ===
   document.addEventListener("DOMContentLoaded", () => {
     const streamSelect = document.getElementById("stream");
     const interestContainer = document.getElementById("interest-container");
 
     streamSelect.addEventListener("change", () => {
-      if (streamSelect.value.trim() !== "") {
-        interestContainer.style.display = "block";
-      } else {
-        interestContainer.style.display = "none";
-      }
+      interestContainer.style.display = streamSelect.value.trim() !== "" ? "block" : "none";
     });
   });
 
-  // Course recommendation logic
+  // === Handle Course Recommendation Request ===
   document.getElementById("course-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+
     const formData = new FormData(e.target);
-    const resDiv = document.getElementById("course-results");
-    resDiv.innerHTML = "⏳ Fetching recommendations...";
+    const resultsDiv = document.getElementById("course-results");
+    resultsDiv.innerHTML = "<p>⏳ Fetching recommendations...</p>";
 
     try {
       const response = await fetch("/recommend_courses", {
@@ -75,40 +76,33 @@
 
       const data = await response.json();
 
-      if (data.error) {
-        resDiv.innerHTML = `<p style="color:red;">⚠️ ${data.error}</p>`;
-        return;
-      }
-
       if (!data.eligible) {
-        resDiv.innerHTML = `<p style="color:red;">${data.message}</p>`;
+        resultsDiv.innerHTML = `<div class="error-box">⚠️ ${data.message}</div>`;
         return;
       }
 
-      if (data.recommendations.length > 0) {
-        resDiv.innerHTML = `
-          <h3>Recommended Courses:</h3>
-          <ul>${data.recommendations.map(c => `<li>${c}</li>`).join("")}</ul>
-          <a href="${data.apply_link}" target="_blank">
-            <button type="submit">Apply Now</button>
-          </a>
+      if (data.recommendations && data.recommendations.length > 0) {
+        const courseList = data.recommendations.map(c => `<li>🎓 ${c}</li>`).join("");
+        const applyButton = `<a href="https://ifheindia.org/online-registration" target="_blank">
+  <button class="apply-btn">Apply Now</button>
+</a>`;
+
+        resultsDiv.innerHTML = `
+          <div class="result-card">
+            <h3>Recommended Courses</h3>
+            <ul>${courseList}</ul>
+            <p class="success-msg">${data.message}</p>
+            ${applyButton}
+          </div>
         `;
       } else {
-        resDiv.innerHTML = "ℹ️ No matching courses found.";
+        resultsDiv.innerHTML = `<div class="info-box">ℹ️ No matching courses found.</div>`;
       }
 
-    } catch (err) {
-      console.error(err);
-      resDiv.innerHTML = "⚠️ Error fetching recommendations.";
+    } catch (error) {
+      console.error(error);
+      resultsDiv.innerHTML = `<div class="error-box">⚠️ Error fetching recommendations.</div>`;
     }
   });
 </script>
-
-<style>
-  /* Optional smooth fade-in for interest dropdown */
-  #interest-container {
-    transition: all 0.3s ease;
-  }
-</style>
-
 {% endblock %}
